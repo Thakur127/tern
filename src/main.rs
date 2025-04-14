@@ -85,6 +85,7 @@ enum Commands {
 #[derive(Parser)]
 #[command(name = "tern")]
 #[command(about = "A simple db migration tool written in rust", long_about = None)]
+#[command(version)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
