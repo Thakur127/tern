@@ -55,15 +55,15 @@ Because it’s written in **Rust**. That’s the only reason you need. Everythin
 ### 🐧 Linux
 
 ```bash
-wget https://github.com/Thakur127/tern/releases/download/v0.1.0/tern-linux-v0.1.0-x86_64.tar.gz
+wget https://github.com/Thakur127/tern/releases/download/v0.1.1/tern-v0.1.1-x86_64-unknown-linux-gnu.tar.gz
 
 mkdir -p ~/.local/bin
 
-tar -xvf tern-linux-v0.1.0-x86_64.tar.gz
+tar -xvf tern-v0.1.1-x86_64-unknown-linux-gnu.tar.gz
 
-mv tern-linux-v0.1.0-x86_64/* ~/.local/bin
+mv tern-v0.1.1-x86_64-unknown-linux-gnu/* ~/.local/bin
 
-rm -rf tern-linux-v0.1.0-x86_64.tar.gz tern-linux-v0.1.0-x86_64
+rm -rf tern-v0.1.1-x86_64-unknown-linux-gnu.tar.gz tern-v0.1.1-x86_64-unknown-linux-gnu
 ```
 
 Make sure `~/.local/bin` is in your `PATH`.
@@ -87,7 +87,7 @@ Don't forget to run `source ~/.bashrc` to make the changes take effect.
 **Check**
 
 ```sh
-tern --help
+tern --version
 ```
 
 ---
