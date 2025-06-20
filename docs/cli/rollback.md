@@ -27,11 +27,13 @@ tern rollback [OPTIONS]
 
 | Option          | Description                                    |
 | --------------- | ---------------------------------------------- |
-| `-s`, `--steps` | Number of migrations to rollback (from latest) |
 | `-n`, `--name`  | Rollback a specific migration by name          |
+| `-a`, `--all`   | Rollback all applied migrations                |
+| `-s`, `--steps` | Number of migrations to rollback (from latest) |
 | `-h`, `--help`  | Show help information                          |
 
 > 💡 Default steps: `1` — Only the latest migration is rolled back if no options are specified.
+> 💡 If both `--all` and `--steps` are specified, `--all` takes precedence.
 
 ---
 
@@ -41,11 +43,15 @@ tern rollback [OPTIONS]
 # Rollback the last applied migration
 tern rollback
 
+# Rollback a specific migration
+tern rollback --name 20250411123000_add_users_table
+
 # Rollback the last 3 migrations
 tern rollback --steps 3
 
-# Rollback a specific migration
-tern rollback --name 20250411123000_add_users_table
+# Rollback all applied migrations
+tern rollback --all
+
 ```
 
 ---
