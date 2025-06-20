@@ -1,3 +1,5 @@
+use colored::Colorize;
+
 use crate::constants::{
     CONFIG_FILE_PATH, DEFAULT_MIGRATIONS_DIR, DEFAULT_SCHEMA_NAME, INIT_MIGRATION_FILE_CONTENT,
 };
@@ -38,7 +40,7 @@ pub fn handle(path: Option<String>, force: bool, db_url: Option<String>) -> Resu
     conn.batch_execute(INIT_MIGRATION_FILE_CONTENT)
         .map_err(|e| format!("Failed to execute init migration: {}", e))?;
 
-    log::info!("tern initialized");
+    println!("{}", "✅ Tern initialized successfully".green().bold());
 
     Ok(())
 }
