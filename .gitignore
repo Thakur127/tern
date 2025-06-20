@@ -3,3 +3,4 @@
 
 .tern
 /db_migrations
+release.sh
