@@ -1,4 +1,4 @@
-use crate::commands::rollback::rollback_name_migration;
+use crate::commands::rollback::rollback_all_migrations;
 use crate::commands::upgrade::upgrade_all_migrations;
 use crate::utils;
 use colored::*;
@@ -28,19 +28,11 @@ pub fn handle(force: bool) -> Result<(), String> {
 
     let mut conn = utils::get_db_connection().map_err(|e| format!("{}", e))?;
 
-    // rollback all the migrations
-    let mut applied_migrations = utils::get_applied_migrations().map_err(|e| format!("{}", e))?;
-
-    applied_migrations.reverse();
-
-    for migration in &applied_migrations {
-        rollback_name_migration(&mut conn, migration)?;
-    }
+    rollback_all_migrations(&mut conn)?;
 
     println!();
 
-    upgrade_all_migrations(&mut conn)
-        .map_err(|e| format!("Failed to upgrade migrations: {}", e))?;
+    upgrade_all_migrations(&mut conn)?;
 
     println!(
         "\n{}",

@@ -4,7 +4,7 @@ use colored::*;
 use postgres::Client;
 use std::{fs, path::Path};
 
-pub fn handle(steps: u32, name: Option<String>) -> Result<(), String> {
+pub fn handle(steps: u32, name: Option<String>, all: bool) -> Result<(), String> {
     let mut conn = utils::get_db_connection().map_err(|e| format!("{}", e))?;
 
     // Ensure tern_migrations table exists
@@ -23,23 +23,20 @@ pub fn handle(steps: u32, name: Option<String>) -> Result<(), String> {
         return rollback_name_migration(&mut conn, name);
     }
 
-    let migrations = conn
-        .query(
-            "SELECT name FROM tern_migrations ORDER BY id DESC LIMIT $1",
-            &[&(steps as i64)],
-        )
-        .map_err(|e| format!("Failed to query applied migrations: {}", e))?
-        .iter()
-        .map(|row| row.get("name"))
-        .collect::<Vec<String>>();
+    if all {
+        rollback_all_migrations(&mut conn)?;
+    } else {
+        let migrations = conn
+            .query(
+                "SELECT name FROM tern_migrations ORDER BY id DESC LIMIT $1",
+                &[&(steps as i64)],
+            )
+            .map_err(|e| format!("Failed to query applied migrations: {}", e))?
+            .iter()
+            .map(|row| row.get("name"))
+            .collect::<Vec<String>>();
 
-    let mut total_migration_rollbacked: i64 = 0;
-    for migration in &migrations {
-        total_migration_rollbacked += 1;
-        rollback_name_migration(&mut conn, migration).map_err(|e| {
-            total_migration_rollbacked -= 1;
-            format!("{}", e)
-        })?;
+        rollback_migrations(&mut conn, migrations)?;
     }
 
     let row = conn
@@ -54,17 +51,6 @@ pub fn handle(steps: u32, name: Option<String>) -> Result<(), String> {
     if row.is_empty() {
         fs::write(".tern/HEAD", "").map_err(|e| format!("Failed to write HEAD: {}", e))?;
     }
-
-    println!(
-        "{} {} {}",
-        "🗑️ Rolled back".bold(),
-        total_migration_rollbacked.to_string().bold().cyan(),
-        if total_migration_rollbacked == 1 {
-            "migration ⚠️"
-        } else {
-            "migrations ⚠️"
-        }
-    );
 
     fs::write(".tern/HEAD", row).map_err(|e| format!("Failed to write HEAD: {}", e))?;
 
@@ -116,4 +102,35 @@ pub fn rollback_name_migration(conn: &mut Client, name: &str) -> Result<(), Stri
         .map_err(|e| format!("Failed to commit transaction: {}", e))?;
 
     Ok(())
+}
+
+pub fn rollback_migrations(conn: &mut Client, migrations: Vec<String>) -> Result<i64, String> {
+    let mut total_migration_rollbacked: i64 = 0;
+    for migration in &migrations {
+        total_migration_rollbacked += 1;
+        rollback_name_migration(conn, migration).map_err(|e| {
+            total_migration_rollbacked -= 1;
+            format!("{}", e)
+        })?;
+    }
+
+    println!(
+        "{} {} {}",
+        "🗑️ Rolled back".bold(),
+        total_migration_rollbacked.to_string().bold().cyan(),
+        if total_migration_rollbacked <= 1 {
+            "migration ⚠️"
+        } else {
+            "migrations ⚠️"
+        }
+    );
+
+    Ok(total_migration_rollbacked)
+}
+
+pub fn rollback_all_migrations(conn: &mut Client) -> Result<i64, String> {
+    let mut applied_migrations = utils::get_applied_migrations().map_err(|e| format!("{}", e))?;
+    applied_migrations.reverse();
+
+    rollback_migrations(conn, applied_migrations)
 }

@@ -58,7 +58,19 @@ enum Commands {
         )]
         steps: u32,
 
-        #[arg(short, long, help = "Rollback a specific migration")]
+        #[arg(
+            short,
+            long,
+            default_value = "false",
+            help = "Rollback all the migrations. It will be preferred over --steps"
+        )]
+        all: bool,
+
+        #[arg(
+            short,
+            long,
+            help = "Rollback a specific migration. It has higher priority than --steps and --all"
+        )]
         name: Option<String>,
     },
 
@@ -105,7 +117,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } => Ok(commands::init::handle(path, force, db_url)?),
         Commands::Generate { name } => Ok(commands::generate::handle(name)?),
         Commands::Upgrade { name } => Ok(commands::upgrade::handle(name)?),
-        Commands::Rollback { steps, name } => Ok(commands::rollback::handle(steps, name)?),
+        Commands::Rollback { steps, name, all } => {
+            Ok(commands::rollback::handle(steps, name, all)?)
+        }
         Commands::List { applied } => Ok(commands::list::handle(applied)?),
         Commands::Status => Ok(commands::status::handle()?),
         Commands::Reset { force } => Ok(commands::reset::handle(force)?),
